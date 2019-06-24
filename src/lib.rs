@@ -13,6 +13,16 @@
 //! This library is based on the gzip header functionality in the
 //! [flate2](https://crates.io/crates/flate2) crate.
 
+#![cfg_attr(all(feature = "mesalock_sgx",
+                not(target_env = "sgx")), no_std)]
+#![cfg_attr(all(target_env = "sgx", target_vendor = "mesalock"), feature(rustc_private))]
+
+#[cfg(all(feature = "mesalock_sgx", not(target_env = "sgx")))]
+#[macro_use]
+extern crate sgx_tstd as std;
+
+use std::prelude::v1::*;
+
 extern crate crc32fast;
 
 mod crc_reader;
@@ -280,7 +290,8 @@ impl GzBuilder {
         self.into_header_inner(true)
     }
 
-    fn into_header_inner(self, use_crc: bool) -> Vec<u8> {
+    /// only pub for mesalock_sgx
+    pub fn into_header_inner(self, use_crc: bool) -> Vec<u8> {
         let GzBuilder {
             extra,
             filename,
